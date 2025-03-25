@@ -77,6 +77,13 @@ jobs:
           git fetch --tags
           git tag -l | grep "@tpl/bun-debian@" || echo "No matching tags found"
 
+      - name: Create GitHub Tag
+        if: ${{ steps.tag_status.outputs.created == 'true' }}
+        run: |
+          echo "Creating GitHub tag..."
+          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          gh release create "${{ steps.tag_status.outputs.tag_name }}" --notes "Automated release tag creation"
+
   notify:
     needs: release
     if: needs.release.outputs.tag_created == 'true'
