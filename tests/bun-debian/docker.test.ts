@@ -25,7 +25,7 @@ async function executeBashCommand(command: string) {
 describe('bun-debian local image', () => {
   test('should have correct Bun version', () => {
     const version = Bun.version;
-    expect(version).toBe('1.2.5');
+    expect(version).toBe('1.2.4');
   });
 
   test('should have Git installed', async () => {

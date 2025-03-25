@@ -1,9 +1,15 @@
-name: Release Packages
+name: Release
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      force_tag:
+        description: 'Force tag creation even if no changes'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -12,14 +18,17 @@ permissions:
 
 jobs:
   release:
-    name: Create Release
+    name: Release
     runs-on: ubuntu-latest
+    outputs:
+      tag_created: ${{ steps.tag_status.outputs.created }}
+      tag_name: ${{ steps.tag_status.outputs.tag_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Git
         run: |
@@ -43,4 +52,37 @@ jobs:
           title: '🚀 Release Updates'
           commit: 'chore: version packages'
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for No Unpublished Projects
+        id: tag_status
+        if: ${{ contains(steps.changesets.outputs.publishOutput, 'No unpublished projects to publish') || github.event.inputs.force_tag == 'true' }}
+        run: |
+          echo "::notice::No unpublished projects detected or force tag requested. Creating manual tag..."
+
+          # Run tag creation script
+          TAG_OUTPUT=$(bun run create-tag)
+
+          # Extract tag name from output
+          TAG_NAME=$(echo "$TAG_OUTPUT" | grep "Creating tag:" | cut -d' ' -f3)
+
+          echo "created=true" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+          echo "::notice::Tag created: $TAG_NAME"
+
+      - name: Verify Tags
+        run: |
+          echo "Verifying tags..."
+          git fetch --tags
+          git tag -l | grep "@tpl/bun@" || echo "No matching tags found"
+
+  notify:
+    needs: release
+    if: needs.release.outputs.tag_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Tag Creation
+        run: |
+          echo "::notice::Tag created: ${{ needs.release.outputs.tag_name }}"
+          echo "Docker image build workflow should be triggered automatically."

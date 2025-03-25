@@ -24,8 +24,16 @@ jobs:
         id: version
         run: |
           TAG=${{ github.ref_name }}
-          VERSION=${TAG#@tpl/bun@}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          # Extract version using regex pattern matching
+          if [[ $TAG =~ @tpl/bun@([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "::notice::Successfully extracted version: $VERSION"
+          else
+            echo "::error::Failed to extract version from tag: $TAG"
+            exit 1
+          fi
+          echo "::notice::Extracted version: $VERSION"
 
       - name: Login to Registry
         uses: docker/login-action@v3
