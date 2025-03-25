@@ -75,7 +75,7 @@ jobs:
         run: |
           echo "Verifying tags..."
           git fetch --tags
-          git tag -l | grep "@tpl/bun@" || echo "No matching tags found"
+          git tag -l | grep "@tpl/bun-debian@" || echo "No matching tags found"
 
   notify:
     needs: release

@@ -1,5 +1,5 @@
 {
-  "name": "@tpl/bun",
+  "name": "@tpl/bun-debian",
   "version": "1.2.4",
   "private": true,
   "type": "module",
