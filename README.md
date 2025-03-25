@@ -20,4 +20,6 @@ To run:
 bun run index.ts
 ```
 
+Please check our [Release Process](./RELEASE.md) documentation for information about versioning and publishing releases.
+
 This project was created using `bun init` in bun v1.2.5. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
