@@ -35,11 +35,17 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ github.actor }}/bun-debian
+          flavor: |
+            latest=false
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=semver,pattern={{version}}
+            type=raw,value=1.2.5-debian
+            type=raw,value=1.2-debian
+            type=raw,value=1-debian
             type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=Bun Debian
+            org.opencontainers.image.description=Bun v1.2.5 runtime on Debian with development tools
+            org.opencontainers.image.version=1.2.5-debian
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
