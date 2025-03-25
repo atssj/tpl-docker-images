@@ -7,4 +7,4 @@ This example demonstrates how to use the `bun-debian` Docker image for a simple 
 Run the example with:
 
 ```bash
-docker-compose up
+docker compose up

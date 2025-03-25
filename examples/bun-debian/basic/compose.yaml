@@ -1,9 +1,7 @@
 services:
   app:
-    build:
-      context: ../../../images/bun-debian
-      dockerfile: Dockerfile
+    image: ghcr.io/atssj/bun-debian:latest
     volumes:
       - ./:/app
     working_dir: /app
-    command: bun run index.ts
+    command: bun test

@@ -1,0 +1,10 @@
+services:
+  test:
+    build:
+      context: ../../images/bun-debian
+      dockerfile: Dockerfile
+    image: test-bun-debian
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: bun test

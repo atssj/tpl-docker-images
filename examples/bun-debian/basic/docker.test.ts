@@ -1,10 +1,4 @@
-console.log("Hello from Bun running in Docker!");
-
-// Show Bun version
-console.log(`Bun version: ${Bun.version}`);
-
-// Show environment
-console.log("Environment:", process.env.NODE_ENV || "development");
+import { expect, test, describe } from "bun:test";
 
 // Check Git version
 async function getGitVersion() {
@@ -28,8 +22,19 @@ async function executeBashCommand(command: string) {
   }
 }
 
-// Run the checks
-console.log("\nChecking system tools:");
-getGitVersion().then(version => console.log("Git version:", version));
-executeBashCommand("echo 'Bash command execution works!'")
-  .then(output => console.log("Bash test:", output));
+describe("bun-debian published image", () => {
+  test("should have correct Bun version", () => {
+    const version = Bun.version;
+    expect(version).toBe("1.2.5");
+  });
+
+  test("should have Git installed", async () => {
+    const gitVersion = await getGitVersion();
+    expect(gitVersion).toMatch(/^git version \d+\.\d+\.\d+/);
+  });
+
+  test("should execute Bash commands", async () => {
+    const output = await executeBashCommand('echo "test successful"');
+    expect(output).toBe("test successful");
+  });
+});
