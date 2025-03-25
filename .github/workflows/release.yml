@@ -56,14 +56,16 @@ jobs:
           
       - name: Debug Changesets Output
         run: |
-          echo "Changesets publish output: ${{ steps.changesets.outputs.publishOutput }}"
-          echo "Force tag input: ${{ github.event.inputs.force_tag }}"
+          echo "Changesets publish output:"
+          echo "${{ toJSON(steps.changesets.outputs) }}"
+          echo "Published: ${{ steps.changesets.outputs.published }}"
+          echo "Has Changes: ${{ steps.changesets.outputs.hasChangesets }}"
           
       - name: Check for No Unpublished Projects
         id: tag_status
-        if: ${{ contains(steps.changesets.outputs.publishOutput, 'No unpublished projects to publish') || github.event.inputs.force_tag == 'true' }}
+        if: ${{ !steps.changesets.outputs.hasChangesets || github.event.inputs.force_tag == 'true' }}
         run: |
-          echo "::notice::No unpublished projects detected or force tag requested. Creating manual tag..."
+          echo "::notice::No changes detected or force tag requested. Creating manual tag..."
 
           # Run tag creation script
           TAG_OUTPUT=$(bun run create-tag)
