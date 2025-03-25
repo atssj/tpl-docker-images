@@ -43,27 +43,9 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: bun run release
-          version: bun run version
-          title: '🚀 Release Updates'
-          commit: 'chore: version packages'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check for Tag Creation
+      - name: Create Tag
         id: tag_status
-        if: ${{ !steps.changesets.outputs.hasChangesets || github.event.inputs.force_tag == 'true' }}
         run: |
-          if [[ "${{ github.event.inputs.force_tag }}" == "true" ]]; then
-            echo "::notice::Force tag creation requested"
-          else
-            echo "::notice::No changesets detected, proceeding with tag creation"
-          fi
-
           # Run tag creation script
           TAG_OUTPUT=$(bun run create-tag)
           echo "Tag creation output: $TAG_OUTPUT"
@@ -80,18 +62,22 @@ jobs:
             exit 1
           fi
 
-      - name: Verify Tags
-        run: |
-          echo "Verifying tags..."
-          git fetch --tags
-          git tag -l | grep "@tpl/bun-debian@" || echo "No matching tags found"
-
-      - name: Create GitHub Tag
+      - name: Create GitHub Release
         if: ${{ steps.tag_status.outputs.created == 'true' }}
         run: |
-          echo "Creating GitHub tag..."
+          echo "Creating GitHub release..."
           gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-          gh release create "${{ steps.tag_status.outputs.tag_name }}" --notes "Automated release tag creation"
+          
+          # Use CHANGELOG.md as release notes if it exists
+          if [[ -f "CHANGELOG.md" ]]; then
+            gh release create "${{ steps.tag_status.outputs.tag_name }}" \
+              --title "Release ${{ steps.tag_status.outputs.tag_name }}" \
+              --notes-file "CHANGELOG.md"
+          else
+            gh release create "${{ steps.tag_status.outputs.tag_name }}" \
+              --title "Release ${{ steps.tag_status.outputs.tag_name }}" \
+              --notes "Automated release ${{ steps.tag_status.outputs.tag_name }}"
+          fi
 
   notify:
     needs: release
