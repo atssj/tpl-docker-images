@@ -1,0 +1,7 @@
+services:
+  app:
+    image: ghcr.io/atssj/bun-debian:1.2.5
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: bun run index.ts

@@ -1,0 +1,21 @@
+{
+  "name": "tpl-docker-images",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write ."
+  },
+  "packageManager": "bun@1.2.5",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.5.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "workspaces": [
+    "images/*",
+    "examples/*"
+  ]
+}
