@@ -53,30 +53,32 @@ jobs:
           commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Debug Changesets Output
-        run: |
-          echo "Changesets publish output:"
-          echo "${{ toJSON(steps.changesets.outputs) }}"
-          echo "Published: ${{ steps.changesets.outputs.published }}"
-          echo "Has Changes: ${{ steps.changesets.outputs.hasChangesets }}"
-          
-      - name: Check for No Unpublished Projects
+
+      - name: Check for Tag Creation
         id: tag_status
         if: ${{ !steps.changesets.outputs.hasChangesets || github.event.inputs.force_tag == 'true' }}
         run: |
-          echo "::notice::No changes detected or force tag requested. Creating manual tag..."
+          if [[ "${{ github.event.inputs.force_tag }}" == "true" ]]; then
+            echo "::notice::Force tag creation requested"
+          else
+            echo "::notice::No changesets detected, proceeding with tag creation"
+          fi
 
           # Run tag creation script
           TAG_OUTPUT=$(bun run create-tag)
+          echo "Tag creation output: $TAG_OUTPUT"
 
           # Extract tag name from output
           TAG_NAME=$(echo "$TAG_OUTPUT" | grep "Creating tag:" | cut -d' ' -f3)
-
-          echo "created=true" >> $GITHUB_OUTPUT
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-
-          echo "::notice::Tag created: $TAG_NAME"
+          
+          if [[ -n "$TAG_NAME" ]]; then
+            echo "created=true" >> $GITHUB_OUTPUT
+            echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "::notice::Successfully created tag: $TAG_NAME"
+          else
+            echo "::error::Failed to extract tag name from output"
+            exit 1
+          fi
 
       - name: Verify Tags
         run: |
