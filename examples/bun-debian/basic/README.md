@@ -8,3 +8,4 @@ Run the example with:
 
 ```bash
 docker compose up
+```

@@ -1,6 +1,6 @@
 {
-  "name": "@tpl-docker-images/bun-debian",
-  "version": "1.0.0",
+  "name": "@tpl/bun",
+  "version": "1.2.5",
   "private": true,
   "type": "module"
 }

@@ -7,6 +7,7 @@ This document outlines the release process for our Docker images. We use [Change
 When making changes that need to be released:
 
 1. Create a new changeset:
+
    ```bash
    bun run changeset
    ```
@@ -19,6 +20,7 @@ When making changes that need to be released:
 ## Versioning
 
 We follow [Semantic Versioning](https://semver.org/):
+
 - **Major** (1.0.0): Breaking changes
 - **Minor** (0.1.0): New features, backwards compatible
 - **Patch** (0.0.1): Bug fixes, backwards compatible
@@ -26,6 +28,7 @@ We follow [Semantic Versioning](https://semver.org/):
 ## Releasing
 
 1. Update versions and changelogs:
+
    ```bash
    bun run version
    ```
