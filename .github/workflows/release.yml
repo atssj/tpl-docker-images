@@ -53,7 +53,12 @@ jobs:
           commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          
+      - name: Debug Changesets Output
+        run: |
+          echo "Changesets publish output: ${{ steps.changesets.outputs.publishOutput }}"
+          echo "Force tag input: ${{ github.event.inputs.force_tag }}"
+          
       - name: Check for No Unpublished Projects
         id: tag_status
         if: ${{ contains(steps.changesets.outputs.publishOutput, 'No unpublished projects to publish') || github.event.inputs.force_tag == 'true' }}
