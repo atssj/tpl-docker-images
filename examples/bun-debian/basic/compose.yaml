@@ -1,6 +1,8 @@
 services:
   app:
-    image: ghcr.io/atssj/bun-debian:1.2.5
+    build:
+      context: ../../../images/bun-debian
+      dockerfile: Dockerfile
     volumes:
       - ./:/app
     working_dir: /app
