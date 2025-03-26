@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM oven/bun:1.2.4-debian
+FROM oven/bun:1.2.6-debian
 
 # Install git and other dependencies
 RUN apt-get update && apt-get install -y \
