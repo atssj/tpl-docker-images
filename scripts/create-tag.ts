@@ -15,8 +15,8 @@ const packagePath: string = path.resolve('./images/bun-debian/package.json');
 const packageJson: PackageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const { name, version } = packageJson;
 
-// Create tag name
-const tagName: string = `${name}@${version}`;
+// Create tag name without @tpl/
+const tagName: string = `${name.replace('@tpl/', '')}@${version}`;
 
 console.log(`Creating tag: ${tagName}`);
 

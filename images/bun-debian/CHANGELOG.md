@@ -1,6 +1,6 @@
 # @tpl/bun-debian
 
-## 1.2.4 (2025-03-25)
+## bun-debian@1.2.4 (2025-03-26)
 
 ### Major Changes
 

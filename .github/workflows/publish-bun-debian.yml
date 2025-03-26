@@ -3,7 +3,7 @@ name: Publish Docker Image - bun-debian
 on:
   push:
     tags:
-      - '@tpl/bun-debian@*'
+      - 'bun-debian@*'
   workflow_dispatch:
     inputs:
       version:
@@ -30,8 +30,8 @@ jobs:
         id: version
         run: |
           # Simplified version extraction
-          echo "version=${GITHUB_REF_NAME#@tpl/bun-debian@}" >> $GITHUB_OUTPUT
-          echo "::notice::Extracted version: ${GITHUB_REF_NAME#@tpl/bun-debian@}"
+          echo "version=${GITHUB_REF_NAME#bun-debian@}" >> $GITHUB_OUTPUT
+          echo "::notice::Extracted version: ${GITHUB_REF_NAME#bun-debian@}"
 
       - name: Login to Registry
         uses: docker/login-action@v3
