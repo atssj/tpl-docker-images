@@ -21,8 +21,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     outputs:
-      tag_created: ${{ steps.tag_status.outputs.created }}
-      tag_name: ${{ steps.tag_status.outputs.tag_name }}
+      tag_created: ${{ steps.tag_creation.outputs.created }}
+      tag_name: ${{ steps.tag_creation.outputs.tag_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,46 +38,37 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 1.2.5
+          bun-version: latest
 
       - name: Install Dependencies
         run: bun install
 
       - name: Create Tag
-        id: tag_status
+        id: tag_creation
         run: |
-          # Run tag creation script
-          TAG_OUTPUT=$(bun run create-tag)
-          echo "Tag creation output: $TAG_OUTPUT"
-
-          # Extract tag name from output
-          TAG_NAME=$(echo "$TAG_OUTPUT" | grep "Creating tag:" | cut -d' ' -f3)
+          # Pass a prefix parameter to your tag creation script
+          TAG_OUTPUT=$(bun run create-tag --prefix "@tpl/bun-debian@" ${{ github.event.inputs.force_tag == true && '--force' || '' }})
+          echo "$TAG_OUTPUT"
           
-          if [[ -n "$TAG_NAME" ]]; then
+          # Parse the output for the tag name (assumes the script outputs "Creating tag: TAG_NAME")
+          if echo "$TAG_OUTPUT" | grep -q "Creating tag:"; then
+            TAG_NAME=$(echo "$TAG_OUTPUT" | grep "Creating tag:" | cut -d' ' -f3)
             echo "created=true" >> $GITHUB_OUTPUT
             echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-            echo "::notice::Successfully created tag: $TAG_NAME"
+            echo "::notice::Created tag: $TAG_NAME"
           else
-            echo "::error::Failed to extract tag name from output"
-            exit 1
+            echo "created=false" >> $GITHUB_OUTPUT
+            echo "::notice::No tag created"
           fi
 
       - name: Create GitHub Release
-        if: ${{ steps.tag_status.outputs.created == 'true' }}
+        if: steps.tag_creation.outputs.created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.tag_creation.outputs.tag_name }}
         run: |
-          echo "Creating GitHub release..."
-          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-          
-          # Use CHANGELOG.md as release notes if it exists
-          if [[ -f "CHANGELOG.md" ]]; then
-            gh release create "${{ steps.tag_status.outputs.tag_name }}" \
-              --title "Release ${{ steps.tag_status.outputs.tag_name }}" \
-              --notes-file "CHANGELOG.md"
-          else
-            gh release create "${{ steps.tag_status.outputs.tag_name }}" \
-              --title "Release ${{ steps.tag_status.outputs.tag_name }}" \
-              --notes "Automated release ${{ steps.tag_status.outputs.tag_name }}"
-          fi
+          RELEASE_NOTES=$([ -f "CHANGELOG.md" ] && cat "CHANGELOG.md" || echo "Automated release $TAG_NAME")
+          gh release create "$TAG_NAME" --title "Release $TAG_NAME" --notes "$RELEASE_NOTES"
 
   notify:
     needs: release
@@ -85,6 +76,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify Tag Creation
+        run: echo "::notice::Tag created: ${{ needs.release.outputs.tag_name }}"
+        
+      - name: Trigger Docker Build
         run: |
-          echo "::notice::Tag created: ${{ needs.release.outputs.tag_name }}"
-          echo "Docker image build workflow should be triggered automatically."
+          # Extract version from tag (adjust parsing as needed)
+          VERSION="${{ needs.release.outputs.tag_name }}"
+          
+          # Trigger the Docker publish workflow
+          gh workflow run publish-bun-debian.yml -f version=$VERSION
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
