@@ -20,9 +20,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    outputs:
-      tag_created: ${{ steps.tag_creation.outputs.created }}
-      tag_name: ${{ steps.tag_creation.outputs.tag_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,19 +70,3 @@ jobs:
             RELEASE_NOTES="Automated release $TAG_NAME"
           fi
           gh release create "$TAG_NAME" --title "Release $TAG_NAME" --notes "${RELEASE_NOTES}"
-
-  notify:
-    needs: release
-    if: needs.release.outputs.tag_created == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Notify and Trigger Build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ needs.release.outputs.tag_name }}
-        run: |
-          echo "::notice::Tag created: $TAG_NAME"
-          gh workflow run publish-bun-debian.yml --ref main -f version=$TAG_NAME
