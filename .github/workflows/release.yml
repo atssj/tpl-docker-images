@@ -67,23 +67,25 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ steps.tag_creation.outputs.tag_name }}
         run: |
-          RELEASE_NOTES=$([ -f "CHANGELOG.md" ] && cat "CHANGELOG.md" || echo "Automated release $TAG_NAME")
-          gh release create "$TAG_NAME" --title "Release $TAG_NAME" --notes "$RELEASE_NOTES"
+          if [ -f "CHANGELOG.md" ]; then
+            RELEASE_NOTES=$(cat "CHANGELOG.md")
+          else
+            RELEASE_NOTES="Automated release $TAG_NAME"
+          fi
+          gh release create "$TAG_NAME" --title "Release $TAG_NAME" --notes "${RELEASE_NOTES}"
 
   notify:
     needs: release
     if: needs.release.outputs.tag_created == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Notify Tag Creation
-        run: echo "::notice::Tag created: ${{ needs.release.outputs.tag_name }}"
+      - name: Checkout
+        uses: actions/checkout@v4
         
-      - name: Trigger Docker Build
-        run: |
-          # Extract version from tag (adjust parsing as needed)
-          VERSION="${{ needs.release.outputs.tag_name }}"
-          
-          # Trigger the Docker publish workflow
-          gh workflow run publish-bun-debian.yml -f version=$VERSION
+      - name: Notify and Trigger Build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.release.outputs.tag_name }}
+        run: |
+          echo "::notice::Tag created: $TAG_NAME"
+          gh workflow run publish-bun-debian.yml --ref main -f version=$TAG_NAME
