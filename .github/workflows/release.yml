@@ -47,7 +47,7 @@ jobs:
         id: tag_creation
         run: |
           # Run tag creation script and capture output
-          TAG_OUTPUT=$(bun run create-tag ${{ github.event.inputs.force_tag == true && '--force' || '' }})
+          TAG_OUTPUT=$(bun run create-tag ${{ github.event.inputs.force_tag == 'true' && '--force' || '' }})
           echo "$TAG_OUTPUT"
           
           # Parse the output for the tag name (assumes the script outputs "Creating tag: TAG_NAME")
