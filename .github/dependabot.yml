@@ -1,0 +1,46 @@
+version: 2
+updates:
+  # Monitor npm dependencies
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "bun"
+      - "root"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "@types/bun"
+        update-types: ["version-update:semver-patch"]
+
+  # Monitor Docker dependencies for bun-debian
+  - package-ecosystem: "docker"
+    directory: "/images/bun-debian"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "bun-debian"
+    groups:
+      docker-deps:
+        patterns:
+          - "*"
+
+  # Monitor GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci"
+    groups:
+      actions:
+        patterns:
+          - "*"
